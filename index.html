@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Для тебя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Manrope:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#17122b;--bg2:#2a1a45;--rose:#f4a9b8;--glow:#ffe3cf;--text:#f6ecf2;--muted:#b9a9c9;
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'Manrope',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--text);background:radial-gradient(120% 90% at 50% 0%,var(--bg2),var(--bg) 70%);overflow:hidden;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+canvas#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto}
+.screen.on{display:flex;animation:in 1.2s ease both}
+@keyframes in{from{opacity:0}to{opacity:1}}
+h1,h2{font-family:var(--serif);font-weight:500;font-style:italic;line-height:1.15}
+h1{font-size:clamp(2.4rem,9vw,3.6rem);margin-bottom:8px}
+.sub{color:var(--muted);margin-bottom:32px}
+.card{width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+input{width:100%;padding:15px 18px;border-radius:14px;border:1px solid rgba(244,169,184,.3);background:rgba(255,255,255,.06);color:var(--text);font:inherit;font-size:16px;text-align:center;outline:none}
+input::placeholder{color:var(--muted)}
+input:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(244,169,184,.2)}
+button{font:inherit;font-weight:500;padding:15px 28px;border-radius:999px;border:0;cursor:pointer;background:var(--rose);color:#2a1030;transition:transform .15s,opacity .2s}
+button:hover:not(:disabled){transform:scale(1.03)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--glow);outline-offset:3px}
+button.ghost{background:transparent;color:var(--text);border:1px solid rgba(244,169,184,.4)}
+.err{min-height:1.3em;color:#ff9fb0;font-size:.9rem}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#lines{max-width:560px;display:flex;flex-direction:column;gap:22px}
+#lines p{font-family:var(--serif);font-style:italic;font-size:clamp(1.5rem,5.5vw,2.1rem);line-height:1.3;opacity:0;filter:blur(8px);transform:translateY(10px);transition:all 1.6s ease}
+#lines p.show{opacity:1;filter:none;transform:none}
+#next1{margin-top:40px;opacity:0;pointer-events:none;transition:opacity 1s}
+#next1.show{opacity:1;pointer-events:auto}
+#story{padding:20px 20px 28px;justify-content:space-between}
+.slide{width:100%;max-width:440px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:0}
+.frame{width:100%;max-height:52vh;aspect-ratio:4/5;border-radius:6px;overflow:hidden;padding:10px 10px 38px;background:#fbf3ee;box-shadow:0 20px 50px rgba(0,0,0,.45);transform:rotate(-1.5deg)}
+.slide.alt .frame{transform:rotate(1.5deg)}
+.frame img{width:100%;height:100%;object-fit:cover;display:block;background:linear-gradient(135deg,#5b3a73,#c4708a)}
+.slide h2{font-size:clamp(1.6rem,6vw,2.1rem)}
+.slide p.t{opacity:.88;line-height:1.65;max-width:420px}
+.slide.swap{animation:in .8s ease both}
+.nav{display:flex;align-items:center;gap:18px;padding-top:14px}
+.dots{display:flex;gap:7px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(244,169,184,.3);transition:.3s}
+.dots i.on{background:var(--rose);transform:scale(1.4)}
+#end h1{font-size:clamp(2.6rem,10vw,4.2rem)}
+#end p{font-family:var(--serif);font-style:italic;font-size:1.5rem;max-width:480px;margin:10px 0 34px;line-height:1.4}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* shop */
+#shop{justify-content:flex-start;padding-top:28px;padding-bottom:48px}
+.heartbox{position:relative;display:flex;justify-content:center;align-items:flex-end;height:230px;width:100%}
+.heartbox svg{transition:width .8s cubic-bezier(.3,1.4,.5,1),height .8s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 0 26px rgba(244,169,184,.55));animation:beat 2.4s ease-in-out infinite;max-width:75vw;max-height:100%}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.count{font-family:var(--serif);font-style:italic;font-size:3rem;margin-top:6px}
+.hint{color:var(--muted);margin:2px 0 14px;min-height:1.4em}
+.fly{position:absolute;bottom:40%;color:var(--rose);font-size:1.3rem;animation:fly 2s ease-out forwards;pointer-events:none}
+@keyframes fly{to{transform:translate(var(--dx),-170px);opacity:0}}
+.shop-title{font-size:1.8rem;margin:34px 0 10px}
+.items{width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(244,169,184,.18)}
+.mine .row{border-style:dashed}
+.em{font-size:1.9rem}
+.info{flex:1}
+.info span{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}
+.row button{padding:10px 16px;font-size:.95rem;white-space:nowrap}
+.empty{color:var(--muted);text-align:center;padding:10px}
+a.tg{color:var(--rose);font-size:.88rem}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--glow);color:#2a1030;padding:13px 22px;border-radius:999px;transition:.4s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ АДМИН-ПАНЕЛИ */
+#admin{justify-content:flex-start;padding:34px 20px 48px;max-width:540px;margin:0 auto}
+.admin-card{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(244,169,184,.2);border-radius:20px;padding:18px;margin-bottom:20px;text-align:left}
+.admin-card h3{font-family:var(--serif);font-size:1.5rem;margin-bottom:12px;color:var(--rose)}
+.admin-row{display:flex;gap:10px;margin-bottom:10px}
+.admin-row input,.admin-card textarea{text-align:left;font-size:14px;padding:10px 14px;border-radius:10px}
+.admin-card textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(244,169,184,.3);color:var(--text);font:inherit;resize:vertical;min-height:70px;outline:none}
+.admin-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.2);padding:10px;border-radius:10px;margin-bottom:8px;font-size:.9rem}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.btn-danger{background:#ff6b81;color:#fff}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="toast" id="toast"></div>
+
+<section class="screen on" id="login">
+  <h1>Только для тебя</h1>
+  <p class="sub">Введи то, что я тебе отправил</p>
+  <div class="card">
+    <input id="u" placeholder="Логин" autocomplete="off" autocapitalize="off">
+    <input id="p" type="password" placeholder="Пароль" autocomplete="off">
+    <div class="err" id="err"></div>
+    <button id="go">Войти</button>
+  </div>
+</section>
+
+<section class="screen" id="intro">
+  <div id="lines"></div>
+  <button id="next1">Дальше</button>
+</section>
+
+<section class="screen" id="story">
+  <div class="slide" id="slide"></div>
+  <div class="nav">
+    <button class="ghost" id="prev" aria-label="Назад">←</button>
+    <div class="dots" id="dots"></div>
+    <button id="next" aria-label="Вперёд">→</button>
+  </div>
+</section>
+
+<section class="screen" id="end">
+  <h1 id="endTitle"></h1>
+  <p id="endText"></p>
+  <div class="btns">
+    <button id="toShop">Магазинчик сердечек</button>
+    <button class="ghost" id="again">Посмотреть сначала</button>
+  </div>
+</section>
+
+<section class="screen" id="shop">
+  <div class="heartbox" id="heartbox">
+    <svg id="bigHeart" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f4a9b8" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 4.5 6.4 4.5c2.1 0 3.9 1.1 5.6 3.1 1.7-2 3.5-3.1 5.6-3.1 3.7 0 5.5 3.9 4 7.3C19.5 16.4 12 21 12 21z"/></svg>
+  </div>
+  <div class="count" id="count">0</div>
+  <p class="hint" id="hint"></p>
+  <button id="claim">Забрать сердечки</button>
+  <h2 class="shop-title">Магазинчик подарков"Beta"</h2>
+  <div class="items" id="items"></div>
+  <h2 class="shop-title">Мои подарки</h2>
+  <div class="items mine" id="gifts"></div>
+  <div class="btns" style="margin-top:28px"><button class="ghost" id="toStory">Наша история</button></div>
+</section>
+
+<!-- ЭКРАН АДМИН-ПАНЕЛИ -->
+<section class="screen" id="admin">
+  <h1>Панель админа 🛠️</h1>
+  <p class="sub">Управление покупками, историями и балансом</p>
+
+  <div class="admin-card">
+    <h3>Управление балансом и покупками</h3>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+      <button class="btn-sm" id="admAddHeart1">+1 Сердечко</button>
+      <button class="btn-sm" id="admAddHearts5">+5 Сердечек</button>
+      <button class="btn-sm" id="admAddHearts">+10 Сердечек</button>
+      <button class="btn-sm btn-danger" id="admClearGifts">Очистить ВСЕ покупки</button>
+    </div>
+    <div id="admBoughtList"></div>
+  </div>
+
+  <div class="admin-card">
+    <h3>Добавить карточку в историю</h3>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <input id="admPhoto" placeholder="Имя файла (напр. photo7.jpg) или URL">
+      <input id="admTitle" placeholder="Заголовок карточки">
+      <textarea id="admText" placeholder="Текст/описание карточки"></textarea>
+      <button id="admAddCard">Добавить карточку</button>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <h3>Текущие карточки истории</h3>
+    <div id="admCardsList"></div>
+  </div>
+
+  <div class="btns">
+    <button class="ghost" id="admToApp">Выйти из Админки</button>
+  </div>
+</section>
+
+<script>
+/* =====================================================
+   ТУТ МЕНЯЕШЬ ВСЁ СВОЁ
+   ===================================================== */
+const CONFIG = {
+  login: "123",          // логин для неё
+  password: "123",       // пароль для неё
+
+  // ДАННЫЕ ДЛЯ АДМИНА
+  adminLogin: "admin",    // логин админа
+  adminPassword: "admin123", // пароль админа
+
+  messages: [
+    "Привет, моя любимая 🤍",
+    "Я сделал для тебя кое-что особенное.",
+    "Не подарок из магазина, а кусочек нас.",
+    "Готова? Тогда листай."
+  ],
+
+  // photo — имя файла рядом с index.html
+  story: [
+    { photo:"photo1.jpg", title:"Наше первое совместное фото", text:"Тогда я ещё не знал, к чему приведет этот первый попавшийся тренд. Но я и представить не мог, что эта фотография - в самом начале нашего пути — станет самой особенной и любимой." },
+    { photo:"photo2.jpg", title:"Halloween", text:"Я впервые захотел, чтобы меня накрасили. Думал, что выйдет провал, и боялся, но тогда впервые понял, что это на самом деле круто. А вдвойне круче, когда рядом есть такая невероятная и прекрасная девушка." },
+    { photo:"photo3.jpg", title:"Поездка", text:"В тот день мы с тобой катались на автобусе, и я сделал эту фотографию, потому что ты выглядела просто неотразимо." },
+    { photo:"photo4.jpg", title:"Каток", text:"Мы тогда пошли кататься на коньках, и я был уверен, что ты будешь надо мной смеяться. Так в итоге и вышло, но было так весело, атмосферно и безумно круто!" },
+    { photo:"photo5.jpg", title:"Genshin", text:"Это был день, когда мы с тобой забрали то, что останется навсегда там, в игре, в знак нашей любви." },
+    { photo:"photo6.jpg", title:"Прогулка летом", text:"Помнишь, как нам было весело, хотя мы не делали ничего особенного - просто веселились и наслаждались моментом." },
+    { photo:"photo7.jpg", title:"Minecraft 2", text:"Пусть это совсем не тот наш мир, где мы начали, зато это наш мир, где мы учимся строить и находим столько тепла и уюта друг в друге, особенно с животными." },
+    { photo:"photo8.jpg", title:"Halloween-2", text:"В тот день я был уже готов ко всему — и морально, и физически. Я хотел, чтобы этот день стал незабываемым, — и он таким и был, благодаря тебе. " },
+    { photo:"photo9.jpg", title:"Всё впереди", text:"Рядом с тобой мне хочется мечтать о будущем и просто никуда не спешить. Я безумно дорожу всем, что между нами есть, и благодарен за каждое мгновение. Ты моё всё." }
+  ],
+
+  endTitle: "Я люблю тебя",
+  endText: "И это только начало нашей истории.",
+
+  // ---- Магазинчик ----
+  startHearts: 4,         // сколько сердечек у неё в самом начале
+  dailyHearts: 1,         // сколько можно забрать раз в день
+  heartsForMaxSize: 40,   // при стольких сердечках большое сердце достигает макс. размера
+  telegram: "KiritoKirigaya28",           // твой ник в Telegram без @ (например "ivan"). Пусто = кнопки не будет
+  shop: [                 // price — цена в сердечках
+    { id:"coffee",  emoji:"☕", name:"Вкусняшка",          desc:"Вкусняшка, которую ты бы хотела", price:4 },
+    { id:"flowers", emoji:"💐", name:"Цветочки",         desc:"Твои цветочки на дом",                 price:10 },
+    { id:"movie",   emoji:"🎬", name:"Вечер кино",           desc:"Фильм, попкорн и я рядом",     price:7 },
+    { id:"hug",     emoji:"🤗", name:"Обнимашки без лимита", desc:"Целый вечер",                  price:15 },
+    { id:"dinner",  emoji:"🍝", name:"Ужин в кафе/ресторане",     desc:"Я выбираю место",           price:25 }
+  ]
+};
+
+/* ===================== ЛОГИКА ===================== */
+const $ = id => document.getElementById(id);
+const show = id => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); $(id).classList.add('on'); };
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c]));
+
+// Вход
+function tryLogin(){
+  const valU = $('u').value.trim().toLowerCase();
+  const valP = $('p').value;
+  
+  if(valU === CONFIG.adminLogin.toLowerCase() && valP === CONFIG.adminPassword){
+    $('err').textContent='';
+    renderAdmin();
+    show('admin');
+    return;
+  }
+
+  const ok = valU === CONFIG.login.toLowerCase() && valP === CONFIG.password;
+  if(ok){ $('err').textContent=''; startIntro(); }
+  else{
+    $('err').textContent = 'Не подошло. Проверь логин и пароль';
+    const c = document.querySelector('#login .card');
+    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+  }
+}
+$('go').onclick = tryLogin;
+['u','p'].forEach(id => $(id).addEventListener('keydown', e => e.key==='Enter' && tryLogin()));
+
+// Сообщения
+let timers = [];
+function startIntro(){
+  show('intro');
+  const box = $('lines'); box.innerHTML=''; $('next1').classList.remove('show');
+  timers.forEach(clearTimeout); timers = [];
+  CONFIG.messages.forEach((m,i) => {
+    const p = document.createElement('p'); p.textContent = m; box.appendChild(p);
+    timers.push(setTimeout(() => p.classList.add('show'), 800 + i*2600));
+  });
+  timers.push(setTimeout(() => $('next1').classList.add('show'), 800 + CONFIG.messages.length*2600));
+}
+$('next1').onclick = () => { idx = 0; renderSlide(); show('story'); };
+
+// История
+let idx = 0;
+function renderSlide(){
+  const s = CONFIG.story[idx], el = $('slide');
+  el.className = 'slide swap' + (idx%2 ? ' alt' : '');
+  el.innerHTML = '<div class="frame"><img src="'+esc(s.photo)+'" alt=""></div><h2></h2><p class="t"></p>';
+  el.querySelector('h2').textContent = s.title;
+  el.querySelector('.t').textContent = s.text;
+  $('dots').innerHTML = CONFIG.story.map((_,i)=>'<i class="'+(i===idx?'on':'')+'"></i>').join('');
+}
+$('next').onclick = () => {
+  if(idx < CONFIG.story.length-1){ idx++; renderSlide(); }
+  else{ $('endTitle').textContent = CONFIG.endTitle; $('endText').textContent = CONFIG.endText; show('end'); }
+};
+$('prev').onclick = () => { if(idx>0){ idx--; renderSlide(); } };
+$('again').onclick = startIntro;
+$('toStory').onclick = () => { idx = 0; renderSlide(); show('story'); };
+$('toShop').onclick = () => { renderShop(); show('shop'); };
+
+// Магазинчик
+const KEY = 'love_app_v1';
+const fresh = () => ({hearts:CONFIG.startHearts,lastClaim:'',bought:[], customStory: []});
+let state;
+try{ 
+  state = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY))||{}); 
+  if (state.customStory && state.customStory.length > 0) {
+    CONFIG.story = state.customStory;
+  }
+}catch(e){ state = fresh(); }
+
+const save = () => { 
+  try{ 
+    state.customStory = CONFIG.story;
+    localStorage.setItem(KEY, JSON.stringify(state)); 
+  }catch(e){} 
+};
+if(location.hash === '#reset'){ state = fresh(); save(); }   // для тестов: добавь #reset к ссылке
+const today = () => new Date().toLocaleDateString('sv');
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 3200);
+}
+function burst(){
+  const box = $('heartbox');
+  for(let i=0;i<14;i++){
+    const h = document.createElement('span'); h.className='fly'; h.textContent='♥';
+    h.style.left = (35+Math.random()*30)+'%'; h.style.setProperty('--dx',(Math.random()*160-80)+'px');
+    h.style.animationDelay = (Math.random()*.5)+'s'; box.appendChild(h);
+    setTimeout(() => h.remove(), 2600);
+  }
+}
+function renderShop(){
+  const size = 90 + Math.min(state.hearts, CONFIG.heartsForMaxSize) * (130 / CONFIG.heartsForMaxSize);
+  $('bigHeart').style.width = $('bigHeart').style.height = size+'px';
+  $('count').textContent = state.hearts;
+  const can = state.lastClaim !== today();
+  $('claim').disabled = !can;
+  $('claim').textContent = can ? 'Забрать +'+CONFIG.dailyHearts : 'Уже забрано сегодня';
+  $('hint').textContent = can ? 'Сегодняшнее сердечко ждёт тебя' : 'Возвращайся завтра за новыми, а пока потрать эти';
+
+  $('items').innerHTML = CONFIG.shop.map(it =>
+    '<div class="row"><div class="em">'+it.emoji+'</div><div class="info"><b>'+esc(it.name)+'</b><span>'+esc(it.desc)+'</span></div>'+
+    '<button data-id="'+it.id+'" '+(state.hearts < it.price ? 'disabled' : '')+'>'+it.price+' ♥</button></div>').join('');
+
+  const counts = {}; state.bought.forEach(b => counts[b.id] = (counts[b.id]||0)+1);
+  const mine = CONFIG.shop.filter(it => counts[it.id]);
+  $('gifts').innerHTML = mine.length ? mine.map(it => {
+    const msg = encodeURIComponent('Я хочу получить подарок: '+it.name+' 🤍');
+    const link = CONFIG.telegram ? '<br><a class="tg" href="https://t.me/'+esc(CONFIG.telegram)+'?text='+msg+'" target="_blank" rel="noopener">Напомнить ему</a>' : '';
+    return '<div class="row"><div class="em">'+it.emoji+'</div><div class="info"><b>'+esc(it.name)+(counts[it.id]>1?' ×'+counts[it.id]:'')+'</b><span>Покажи мне это, и я всё исполню'+link+'</span></div></div>';
+  }).join('') : '<div class="empty">Пока пусто. Выбери что-нибудь в магазинчике выше.</div>';
+}
+$('claim').onclick = () => {
+  if(state.lastClaim === today()) return;
+  state.hearts += CONFIG.dailyHearts; state.lastClaim = today(); save(); burst(); renderShop();
+};
+$('items').onclick = e => {
+  const b = e.target.closest('button[data-id]'); if(!b) return;
+  const it = CONFIG.shop.find(x => x.id === b.dataset.id);
+  if(!it || state.hearts < it.price) return;
+  state.hearts -= it.price; state.bought.push({id:it.id, date:today()}); save(); renderShop();
+  toast('Куплено: '+it.name+'. Покажи мне, и я исполню 🤍');
+};
+
+// Огоньки на фоне
+const cv = $('stars'), cx = cv.getContext('2d'); let W,H,dots=[];
+function resize(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+  dots = Array.from({length:Math.round(W*H/16000)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.4,s:Math.random()*.25+.05,p:Math.random()*6})); }
+function tick(t){
+  cx.clearRect(0,0,W,H);
+  dots.forEach(d=>{ d.y-=d.s; if(d.y<-5){d.y=H+5;d.x=Math.random()*W}
+    cx.globalAlpha=.25+.45*Math.abs(Math.sin(t/1800+d.p));
+    cx.fillStyle='#ffd9e2'; cx.beginPath(); cx.arc(d.x,d.y,d.r,0,7); cx.fill(); });
+  requestAnimationFrame(tick);
+}
+addEventListener('resize',resize); resize(); requestAnimationFrame(tick);
+
+/* =====================================================
+   АДМИН-ФУНКЦИОНАЛ
+   ===================================================== */
+function renderAdmin(){
+  // 1. Покупки
+  if(!state.bought.length){
+    $('admBoughtList').innerHTML = '<div style="color:var(--muted); font-size:.9rem;">Покупок пока нет</div>';
+  } else {
+    $('admBoughtList').innerHTML = state.bought.map((b, i) => {
+      const item = CONFIG.shop.find(x => x.id === b.id);
+      return '<div class="admin-item"><span>'+(item ? item.emoji+' '+item.name : b.id)+' ('+b.date+')</span>'+
+             '<button class="btn-sm btn-danger" onclick="admRemoveGift('+i+')">Удалить</button></div>';
+    }).join('');
+  }
+
+  // 2. Карточки истории
+  $('admCardsList').innerHTML = CONFIG.story.map((s, i) => 
+    '<div class="admin-item"><div><b>'+(i+1)+'. '+esc(s.title)+'</b><br><small style="color:var(--muted)">'+esc(s.photo)+'</small></div>'+
+    '<button class="btn-sm btn-danger" onclick="admRemoveCard('+i+')">Удалить</button></div>'
+  ).join('');
+}
+
+// Операции в админке
+$('admAddHeart1').onclick = () => {
+  state.hearts += 1; save(); toast('Добавлено +1 сердечко!'); renderAdmin();
+};
+
+$('admAddHearts5').onclick = () => {
+  state.hearts += 5; save(); toast('Добавлено +5 сердечек!'); renderAdmin();
+};
+
+$('admAddHearts').onclick = () => {
+  state.hearts += 10; save(); toast('Добавлено +10 сердечек!'); renderAdmin();
+};
+
+$('admClearGifts').onclick = () => {
+  state.bought = []; save(); toast('Все покупки очищены'); renderAdmin();
+};
+
+window.admRemoveGift = function(idx) {
+  state.bought.splice(idx, 1); save(); renderAdmin(); toast('Покупка удалена');
+};
+
+$('admAddCard').onclick = () => {
+  const photo = $('admPhoto').value.trim();
+  const title = $('admTitle').value.trim();
+  const text = $('admText').value.trim();
+
+  if(!photo || !title) {
+    toast('Заполните ссылку на фото и заголовок!');
+    return;
+  }
+
+  CONFIG.story.push({ photo, title, text });
+  save();
+  $('admPhoto').value = ''; $('admTitle').value = ''; $('admText').value = '';
+  renderAdmin();
+  toast('Карточка успешно добавлена!');
+};
+
+window.admRemoveCard = function(idx) {
+  if(CONFIG.story.length <= 1) {
+    toast('Нельзя удалить последнюю карточку!');
+    return;
+  }
+  CONFIG.story.splice(idx, 1);
+  save();
+  renderAdmin();
+  toast('Карточка удалена');
+};
+
+$('admToApp').onclick = () => {
+  show('login');
+};
+</script>
+</body>
+</html>
